@@ -68,7 +68,8 @@ class Kasmasuk extends BackendController
         /*
          * Data Site Datatables
          */
-        // $this->db->where('tb_kas_keluar.tanggal_kk', date('Y-m-d'));
+        // $this->db->where('tb_kas_masuk.tanggal_km >', date('Y-m-d'));
+        // $this->db->where('tb_kas_masuk.tanggal_km <', date('Y-m-d'));
         $list = $this->models->get_datatables(null, $table, $join, $column_order, $column_search, $order)->result_array();
         $data = [];
         $no   = $_POST['start'];
@@ -76,7 +77,7 @@ class Kasmasuk extends BackendController
             $no++;
             $row = [];
             $row[] = $no;
-            $row[] = date("d-m-Y", strtotime($field['tanggal_km']));
+            $row[] = date("d-m-Y H:i:s", strtotime($field['tanggal_km']));
             $row[] = $field['kdbuktikm'];
             $row[] = $field['kode_akun'];
             $row[] = $field['nama_akun'];
@@ -95,6 +96,17 @@ class Kasmasuk extends BackendController
         $this->output
             ->set_content_type('application/json')
             ->set_output(json_encode($json));
+    }
+
+    public function test()
+    {
+        $date = date('Y-m-d');
+        $select = 'MAX(RIGHT(kdbuktikm,2)) AS kd_max';
+        $table = 'tb_kas_masuk';
+        $where = "WHERE TO_TIMESTAMP('2020-11-09 22:51:14', 'YYYY-MM-DD HH:MI:SS') = $date";
+        // and id_user= $id 
+        $kd = $this->models->cKode($select, $table, $where, 'KM');
+        var_dump($kd);
     }
 
     public function insert()
@@ -127,9 +139,10 @@ class Kasmasuk extends BackendController
             ];
         } else {
             # code..
+            $date = date('Y-m-d H:i:s');
             $select = 'MAX(RIGHT(kdbuktikm,2)) AS kd_max';
             $table = 'tb_kas_masuk';
-            $where = 'WHERE DATE(tanggal_km)=CURRENT_DATE';
+            $where = "WHERE tanggal_km = ";
             // and id_user= $id 
             $kd = $this->models->cKode($select, $table, $where, 'KM');
 
@@ -141,7 +154,7 @@ class Kasmasuk extends BackendController
             $rp = str_replace($strreplace, '', $jmlkm);
             $data = [
                 'kdbuktikm' => $kd,
-                'tanggal_km' => date('Y-m-d'),
+                'tanggal_km' => date('Y-m-d H:i:s'),
                 'id_kode_akun'     => $kdakun,
                 'jumlahkm'     => $rp,
                 'ket_km'     => $ketkm
